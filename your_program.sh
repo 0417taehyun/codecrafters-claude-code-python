@@ -15,6 +15,7 @@ set -e # Exit early if any commands fail
 SCRIPT_DIR="$(dirname "$0")"
 PYTHONPATH="$SCRIPT_DIR" exec uv run \
   --project "$SCRIPT_DIR" \
+  --env-file "$SCRIPT_DIR/.env" \
   --quiet \
   python -P -m app.main \
   "$@"
