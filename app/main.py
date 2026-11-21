@@ -4,6 +4,9 @@ import sys
 
 from openai import OpenAI
 
+from app.tools import read_file
+
+
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
 
@@ -21,6 +24,7 @@ def main():
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
         messages=[{"role": "user", "content": args.p}],
+        tools=[read_file]
     )
 
     if not chat.choices or len(chat.choices) == 0:
