@@ -34,6 +34,8 @@ def main():
             raise RuntimeError("no choices in response")
 
         message = response.choices[0].message
+        messages.append(message)
+        
         if not message.tool_calls:
             print(message.content)
             break
