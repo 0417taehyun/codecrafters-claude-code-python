@@ -1,10 +1,11 @@
 import argparse
 import os
 import sys
+import json
 
 from openai import OpenAI
 
-from app.tools import read_file
+from app.tools import TOOL_HANDLER, read_file_schema
 
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -24,7 +25,7 @@ def main():
     chat = client.chat.completions.create(
         model="anthropic/claude-haiku-4.5",
         messages=[{"role": "user", "content": args.p}],
-        tools=[read_file]
+        tools=[read_file_schema]
     )
 
     if not chat.choices or len(chat.choices) == 0:
@@ -34,7 +35,21 @@ def main():
     print("Logs from your program will appear here!", file=sys.stderr)
 
     # TODO: Uncomment the following line to pass the first stage
-    print(chat.choices[0].message.content)
+    message = chat.choices[0].message
+    if message.tool_calls:
+        for tool_call in message.tool_calls:
+            function_name = tool_call.function.name
+            arguments = json.loads(tool_call.function.arguments)
+
+            handler = TOOL_HANDLER.get(function_name)
+            if handler:
+                result = handler(**arguments)
+            else:
+                result = f"Error: unknown tool: {function_name}"
+            
+            print(result)
+    else:
+        print(message)
 
 
 if __name__ == "__main__":

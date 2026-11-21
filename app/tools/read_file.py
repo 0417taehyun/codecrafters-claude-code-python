@@ -1,7 +1,7 @@
 from app.tools.schema import ToolSchema, FunctionSchema, ParameterSchema
 
 
-read_file = ToolSchema(
+read_file_schema = ToolSchema(
     function=FunctionSchema(
         name="read_file",
         description="Read and return the contents of a file",
@@ -19,5 +19,10 @@ read_file = ToolSchema(
 ).model_dump()
 
 
+def read_file(file_path: str) -> str:
+    with open(file=file_path) as file:
+        return file.read()
+
+
 if __name__ == "__main__":
-    print(read_file)
+    print(read_file_schema)
