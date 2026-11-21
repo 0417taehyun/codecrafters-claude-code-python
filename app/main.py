@@ -1,10 +1,11 @@
 import argparse
 import os
+import sys
 import json
 
 from openai import OpenAI
 
-from app.tools import TOOL_HANDLER, read_file_schema, write_file_schema
+from app.tools import TOOL_SCHEMAS, TOOL_HANDLER
 
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -23,12 +24,21 @@ def main():
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     step = 1
-    messages = [{"role": "user", "content": args.p}]
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                f"You are a coding agent working in {os.getcwd()}. "
+                "Use the tools to complete the user's requests."
+            )
+        },
+        {"role": "user", "content": args.p},
+    ]
     while step <= MAXIMUM_STEPS:
         response = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
             messages=messages,
-            tools=[read_file_schema, write_file_schema]
+            tools=TOOL_SCHEMAS
         )
 
         if not response.choices or len(response.choices) == 0:
@@ -38,6 +48,7 @@ def main():
         messages.append(message)
 
         if not message.tool_calls:
+            print(f"[step {step}] no tool call", file=sys.stderr)
             print(message.content)
             break
 
@@ -51,6 +62,7 @@ def main():
             else:
                 result = f"Error: unknown tool: {function_name}"
 
+            print(f"[step {step}] {function_name}({arguments}) -> {result!r}", file=sys.stderr)
             messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": result})
 
         step += 1
