@@ -49,7 +49,7 @@ def main():
             
             print(result)
     else:
-        print(message)
+        print(message.content)
 
 
 if __name__ == "__main__":
