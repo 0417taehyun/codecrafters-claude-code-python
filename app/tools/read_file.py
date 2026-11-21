@@ -22,7 +22,3 @@ read_file_schema = ToolSchema(
 def read_file(file_path: str) -> str:
     with open(file=file_path) as file:
         return file.read()
-
-
-if __name__ == "__main__":
-    print(read_file_schema)

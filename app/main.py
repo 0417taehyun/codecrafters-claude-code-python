@@ -4,12 +4,13 @@ import json
 
 from openai import OpenAI
 
-from app.tools import TOOL_HANDLER, read_file_schema
+from app.tools import TOOL_HANDLER, read_file_schema, write_file_schema
 
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", default="https://openrouter.ai/api/v1")
-MAXIMUM_STEPS = os.getenv("MAXIMUM_STEPS", default=10)
+MAXIMUM_STEPS = int(os.getenv("MAXIMUM_STEPS", default="10"))
+
 
 def main():
     p = argparse.ArgumentParser()
@@ -21,13 +22,13 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    steps = 1
+    step = 1
     messages = [{"role": "user", "content": args.p}]
-    while steps <= MAXIMUM_STEPS:
+    while step <= MAXIMUM_STEPS:
         response = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
             messages=messages,
-            tools=[read_file_schema]
+            tools=[read_file_schema, write_file_schema]
         )
 
         if not response.choices or len(response.choices) == 0:
@@ -35,7 +36,7 @@ def main():
 
         message = response.choices[0].message
         messages.append(message)
-        
+
         if not message.tool_calls:
             print(message.content)
             break
@@ -52,7 +53,7 @@ def main():
 
             messages.append({"role": "tool", "tool_call_id": tool_call.id, "content": result})
 
-        steps += 1
+        step += 1
 
 
 if __name__ == "__main__":
