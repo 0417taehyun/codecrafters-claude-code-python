@@ -13,7 +13,7 @@ class SkillSchema(BaseModel):
     description: str
     path: Path
 
-    @field_serializer
+    @field_serializer("path")
     def serialize_path(self, path: Path) -> str:
         return str(path)
 
