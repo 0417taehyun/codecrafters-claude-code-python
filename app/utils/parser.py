@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 
 from app.tools import read_file
 
@@ -12,6 +12,10 @@ class SkillSchema(BaseModel):
     name: str
     description: str
     path: Path
+
+    @field_serializer
+    def serialize_path(self, path: Path) -> str:
+        return str(path)
 
 
 class SkillParser:
