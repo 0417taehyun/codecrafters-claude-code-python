@@ -39,12 +39,14 @@ def main():
             "content": (
                 f"You are a coding agent working in {os.getcwd()}. "
                 "Use the tools to complete the user's requests."
-                "Also, You have access to the following skills with format {\"name\": ..., \"description\": ...}:\n"
+                "Also, you have access to the following skills with format {\"name\": ..., \"description\": ...}:\n"
                 f"{json.dumps(skills)}"
             )
         },
         {"role": "user", "content": args.p},
     ]
+
+    print(messages)
 
     while step <= MAXIMUM_STEPS:
         response = client.chat.completions.create(
