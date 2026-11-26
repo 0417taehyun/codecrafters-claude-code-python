@@ -27,7 +27,7 @@ class SkillParser:
         if self.delimiter not in remaining:
             raise ValueError(f"Skill in {path} has formatting issue.")
 
-        end = remaining.index(self.delimiter)
+        end = remaining.index(value=self.delimiter)
         frontmatter = "\n".join(remaining[:end]) + "\n"
 
         metadata = yaml.safe_load(frontmatter)
@@ -39,9 +39,11 @@ class SkillParser:
         for path in paths:
             skill = self.read_skill(path=path)
             skills.append(skill)
-
         return skills
 
-    def read_content(skill: SkillSchema) -> str:
-        return read_file(file_path=skill.path)
+    def read_content(self, skill: SkillSchema) -> str:
+        content = read_file(file_path=skill.path)
+        lines = content.splitlines()
+        end = lines.index(value=self.delimiter, start=1)
+        return "\n".join(lines[end+1:]).lstrip("\n")
     

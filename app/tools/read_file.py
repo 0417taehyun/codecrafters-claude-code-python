@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from app.tools.schema import ToolSchema, FunctionSchema, ParameterSchema
 
 
@@ -19,6 +21,6 @@ read_file_schema = ToolSchema(
 ).model_dump()
 
 
-def read_file(file_path: str) -> str:
+def read_file(file_path: Path | str) -> str:
     with open(file=file_path) as file:
         return file.read()
