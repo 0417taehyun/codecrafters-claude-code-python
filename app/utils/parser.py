@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ConfigDict
 
+from app.tools import read_file
 
 
 class SkillSchema(BaseModel):
@@ -10,6 +11,7 @@ class SkillSchema(BaseModel):
 
     name: str
     description: str
+    path: Path
 
 
 class SkillParser:
@@ -29,6 +31,7 @@ class SkillParser:
         frontmatter = "\n".join(remaining[:end]) + "\n"
 
         metadata = yaml.safe_load(frontmatter)
+        metadata["path"] = path.resolve()
         return SkillSchema.model_validate(metadata)
 
     def read_skills(self, paths: list[Path]) -> list[SkillSchema]:
@@ -38,3 +41,7 @@ class SkillParser:
             skills.append(skill)
 
         return skills
+
+    def read_content(skill: SkillSchema) -> str:
+        return read_file(file_path=skill.path)
+    

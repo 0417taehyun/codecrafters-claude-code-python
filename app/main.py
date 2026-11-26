@@ -27,10 +27,33 @@ def main():
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
     parser = SkillParser()
-    skills = [
-        skill.model_dump() for skill
-        in parser.read_skills(paths=sorted(Path.cwd().rglob("SKILL.md")))
-    ]
+    skills = parser.read_skills(paths=sorted(Path.cwd().rglob("SKILL.md")))
+
+    user_prompt: str = args.p
+    if user_prompt.startswith("/"):
+        parts = user_prompt.split(maxsplit=1)
+
+        skill_name = parts[0][1:] # Remove the front "/" character to find skill
+        instruction = parts[1] if len(parts) == 2 else ""
+
+        matched_skills = [
+            skill for skill in skills
+            if skill.name == skill_name
+        ]
+
+        if not matched_skills:
+            p.error(f"Unknown skill: {skill_name}")
+
+        if len(matched_skills) > 1:
+            p.error(f"Multiple skills named '{skill_name}' were found")
+
+        skill = matched_skills[0]
+
+        user_prompt = (
+            f"Use the skill: {skill.name}\n"
+            f"Skill instructions:\n{parser.read_content(skill=skill)}\n"
+            f"User request:\n{instruction}"
+        )
 
     step = 1
     messages = [
@@ -41,10 +64,10 @@ def main():
                 "Use the tools to complete the user's requests.\n"
                 "Also, you have access to the following skills with format {\"name\": ..., \"description\": ...}"
                 "Choose the proper skills based on the name and description to complete the user's requests."
-                f"Skills: {json.dumps(skills)}"
+                f"Skills: {json.dumps([skill.model_dump() for skill in skills])}"
             )
         },
-        {"role": "user", "content": args.p},
+        {"role": "user", "content": user_prompt},
     ]
 
     while step <= MAXIMUM_STEPS:
