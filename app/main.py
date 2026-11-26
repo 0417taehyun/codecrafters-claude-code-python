@@ -29,7 +29,7 @@ def main():
     parser = SkillParser()
     skills = [
         skill.model_dump() for skill
-        in parser.read_skills(paths=sorted(Path(__file__).resolve().parent.rglob("*/SKILL.md")))
+        in parser.read_skills(paths=sorted(Path.cwd().rglob("SKILL.md")))
     ]
 
     step = 1
@@ -45,8 +45,6 @@ def main():
         },
         {"role": "user", "content": args.p},
     ]
-
-    print("message: ", messages)
 
     while step <= MAXIMUM_STEPS:
         response = client.chat.completions.create(
