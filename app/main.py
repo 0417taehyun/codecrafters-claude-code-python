@@ -3,9 +3,12 @@ import os
 import sys
 import json
 
+from pathlib import Path
+
 from openai import OpenAI
 
 from app.tools import TOOL_SCHEMAS, TOOL_HANDLER
+from app.utils import SkillParser
 
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -23,6 +26,12 @@ def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
+    parser = SkillParser()
+    skills = [
+        skill.model_dump() for skill
+        in parser.read_skills(paths=sorted(Path(__file__).resolve().parent.rglob("*/SKILL.md")))
+    ]
+
     step = 1
     messages = [
         {
@@ -30,10 +39,15 @@ def main():
             "content": (
                 f"You are a coding agent working in {os.getcwd()}. "
                 "Use the tools to complete the user's requests."
+                "Also, You have access to the following skills with format {\"name\": ..., \"description\": ...}:\n"
+                f"{json.dumps(skills)}"
             )
         },
         {"role": "user", "content": args.p},
     ]
+
+    print("message: ", messages)
+
     while step <= MAXIMUM_STEPS:
         response = client.chat.completions.create(
             model="anthropic/claude-haiku-4.5",
